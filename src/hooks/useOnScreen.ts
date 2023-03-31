@@ -16,7 +16,7 @@ const useOnScreen = (
         observer.observe(observable);
 
         return () => observer.unobserve(observable);
-    }, []);
+    });
 
     return isIntersecting;
 };
