@@ -8,12 +8,15 @@ type Props = {
 };
 
 export default function UploadForm({ closeModal }: Props) {
+    // ссылка на элемент для превью загруженного файла
     const previewRef = useRef<HTMLImageElement | null>(null);
+    // состояние файла
     const [file, setFile] = useState<File>();
     const { user, accessToken, mutate } = useUser();
 
     if (!user) return null;
 
+    // обработчик отправки формы
     const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
         if (!file) return;
 
@@ -21,16 +24,19 @@ export default function UploadForm({ closeModal }: Props) {
 
         const formData = new FormData();
 
+        // создаем экземпляр `File`, названием которого является id пользователя + расширение файла
         const _file = new File([file], `${user.id}.${file.type.split('/')[1]}`, {
             type: file.type,
         });
         formData.append('avatar', _file);
 
         try {
+            // отправляем файл на сервер
             const res = await fetch('/api/upload', {
                 method: 'POST',
                 body: formData,
                 headers: {
+                    // роут для загрузки аватара является защищенным
                     Authorization: `Bearer ${accessToken}`,
                 },
             });
@@ -39,9 +45,12 @@ export default function UploadForm({ closeModal }: Props) {
                 throw res;
             }
 
+            // извлекаем обновленные данные пользователя
             const user = await res.json();
+            // инвалидируем кэш
             mutate({ user });
 
+            // закрываем модалку
             if (closeModal) {
                 closeModal();
             }
@@ -50,13 +59,19 @@ export default function UploadForm({ closeModal }: Props) {
         }
     };
 
+    // обработчик изменения состояния инпута для загрузки файла
     const handleChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
         if (e.target.files && previewRef.current) {
+            // извлекаем файл
             const _file = e.target.files[0];
+            // обновляем состояние
             setFile(_file);
+            // получаем ссылку на элемент `img`
             const img = previewRef.current.children[0] as HTMLImageElement;
+            // формируем и устанавливаем источник изображения
             img.src = URL.createObjectURL(_file);
             img.onload = () => {
+                // очищаем память
                 URL.revokeObjectURL(img.src);
             };
         }

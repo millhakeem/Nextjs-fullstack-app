@@ -9,11 +9,15 @@ type Props = {
 };
 
 export default function Modal({ triggerComponent, modalContent, size = 'S' }: Props) {
+    // состояние открытости модалки
     const [open, setOpen] = useState(false);
 
+    // метод для открытия модалки
     const handleOpen = () => setOpen(true);
+    // метод для закрытия модалки
     const handleClose = () => setOpen(false);
 
+    // содержимому модалки в качестве пропа передается метод для закрытия модалки
     const content = cloneElement(modalContent, { closeModal: handleClose });
 
     const modalStyles = useMemo(

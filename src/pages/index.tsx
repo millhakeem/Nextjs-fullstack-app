@@ -23,7 +23,12 @@ export default function Home({ data }: InferGetStaticPropsType<typeof getStaticP
             <CustomHead
                 title='Home Page'
                 description='This is Home Page'
-            />
+            >
+                <link
+                    rel='icon'
+                    href='/favicon.ico'
+                />
+            </CustomHead>
             <Typography
                 variant='h4'
                 textAlign='center'

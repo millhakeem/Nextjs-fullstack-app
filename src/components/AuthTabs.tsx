@@ -35,13 +35,20 @@ function a11yProps(index: number) {
 type Props = { closeModal?: () => void };
 
 export default function AuthTabs({ closeModal }: Props) {
+    // состояние индекса открытой вкладки
     const [tabIndex, setTabIndex] = useState(0);
+    // состояние индикатора загрузки
     const [loading, setLoading] = useState(true);
 
+    // метод для переключения вкладок
     const handleChange = (event: React.SyntheticEvent, value: number) => {
         setTabIndex(value);
     };
 
+    // после регистрации мы не только записываем данные пользователя в БД,
+    // но также фиксируем факт регистрации в локальном хранилище
+    // если пользователь зарегистрирован, мы показываем ему вкладку авторизации,
+    // если нет - вкладку регистрации
     useEffect(() => {
         if (storageLocal.get('user_has_been_registered')) {
             setTabIndex(1);

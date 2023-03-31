@@ -18,21 +18,27 @@ type Props = {
 export default function RegisterForm({ closeModal }: Props) {
     const theme = useTheme();
     const router = useRouter();
+    // метод для мутирования данных пользователя
     const { mutate } = useUser();
 
+    // состояние ошибок
     const [errors, setErrors] = useState<{
         email?: boolean;
         password?: boolean;
         passwordConfirm?: boolean;
     }>({});
 
+    // обработчик отправки формы
     const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
         e.preventDefault();
+        // данные пользователя в виде объета
         const formData = Object.fromEntries(
             new FormData(e.target as HTMLFormElement),
         ) as unknown as Pick<User, 'username' | 'email' | 'password'> & {
             passwordConfirm?: string;
         };
+
+        // валидация формы
         const _errors: typeof errors = {};
         if (formData.password.length < 6) {
             _errors.password = true;
@@ -40,33 +46,42 @@ export default function RegisterForm({ closeModal }: Props) {
         if (formData.password !== formData.passwordConfirm) {
             _errors.passwordConfirm = true;
         }
+        // если имеются ошибки
         if (Object.keys(_errors).length) {
             return setErrors({ ..._errors });
         }
 
+        // удаляем лишние данные
         delete formData.passwordConfirm;
 
         try {
+            // отправляем данные на сервер
             const res = await fetch('/api/auth/register', {
                 method: 'POST',
                 body: JSON.stringify(formData),
             });
 
+            // если ответ имеет статус-код 409,
+            // значит, пользователь уже зарегистрирован
             if (res.status === 409) {
                 return setErrors({ email: true });
             } else if (!res.ok) {
                 throw res;
             }
 
+            // извлекаем данные пользователя и токен доступа из ответа
             const data = (await res.json()) as UserResponseData;
+            // инвалидируем кэш
             mutate(data);
-
+            // фиксируем факт регистрации пользователя в локальном хранилище
             storageLocal.set('user_has_been_registered', true);
 
+            // закрываем модалку
             if (closeModal) {
                 closeModal();
             }
 
+            // перенаправляем пользователя на главную страницу
             if (router.pathname !== '/') {
                 router.push('/');
             }
@@ -75,7 +90,9 @@ export default function RegisterForm({ closeModal }: Props) {
         }
     };
 
+    // обработчик ввода
     const handleInput: React.FormEventHandler<HTMLFormElement> = () => {
+        // сбрасываем ошибки при наличии
         if (Object.keys(errors).length) {
             setErrors({});
         }

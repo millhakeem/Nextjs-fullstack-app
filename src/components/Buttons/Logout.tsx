@@ -8,10 +8,13 @@ type Props = {
 export default function LogoutButton({ closeModal }: Props) {
     const { accessToken, mutate } = useUser();
 
+    // обработчик нажатия кнопки
     const onClick = async () => {
         try {
+            // сообщаем серверу о выходе пользователя из системы
             const response = await fetch('/api/auth/logout', {
                 headers: {
+                    // роут является защищенным
                     Authorization: `Bearer ${accessToken}`,
                 },
             });
@@ -20,8 +23,10 @@ export default function LogoutButton({ closeModal }: Props) {
                 throw response;
             }
 
+            // инвалидируем кэш
             mutate({ user: undefined, accessToken: undefined });
 
+            // закрываем модалку
             if (closeModal) {
                 closeModal();
             }
